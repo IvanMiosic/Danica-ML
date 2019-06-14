@@ -6,11 +6,14 @@ import os
 import glob
 
 
-def open_images(path):    
+def open_images(path):
+    """Opens all images and associated tables from given folder."""    
     return [open_image_and_table(filename) for filename in 
             glob.glob(os.path.join(path, '*.tif'))]     
 
-def open_image_and_table(filename):   
+def open_image_and_table(filename): 
+    """Opens file containing image and associated file containing locations of
+    infected dots."""
     image = Image.open(filename)
     image.filter(ImageFilter.SHARPEN)
     
@@ -20,6 +23,7 @@ def open_image_and_table(filename):
     return {"img": image, "loc": locations}
 
 def read_locations(filename):
+    """Reads csv file containing locations of infected dots."""
     df = pd.read_csv(filename, sep = "\t")
     
     xs = np.array(df["X"].tolist())
@@ -31,6 +35,9 @@ def read_locations(filename):
      
 
 def slice_image(img_dict, width=85, height=64):
+    """Slices given image to subimages of given width and size. Returns array 
+    of dictionaries: first element of dict is subimage, second is number of
+    infected dots in image"""
     img_tif = img_dict["img"]
     img_loc = img_dict["loc"]
     
@@ -48,6 +55,8 @@ def slice_image(img_dict, width=85, height=64):
 
 
 def count(locations, box = [0, 0, 1360, 1024]):
+    """Counts number of infected dots from given coordinates of dots and 
+    box (part of image, specified with [blx, bly, urx, ury])"""
     xs = locations["X"]
     ys = locations["Y"]
     
@@ -66,6 +75,8 @@ def convert_image(img):
     return data
 
 def vectorized_number(count):
+    """Produces vector having zeros everywhere, except at parameter 
+    given index, which is 1"""
     e = np.zeros((6, 1))
     e[count] = 1.0
     return e

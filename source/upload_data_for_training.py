@@ -13,7 +13,7 @@ def prepare_data_for_training(folder_name):
     
     return converted_images
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
     #input_set = prepare_data_for_training("../images/training_images/")
     #train_cnn(input_set)
     
