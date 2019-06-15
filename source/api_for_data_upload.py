@@ -76,8 +76,8 @@ def convert_image(img):
     return data
 
 def vectorized_number(count):
-    """Produces vector having zeros everywhere, except at parameter 
-    given index, which is 1"""
+    """Produces vector having zeros everywhere, except at
+    given index (parameter 'count' \in [0, 5]), where it is 1"""
     e = np.zeros((6, 1))
     e[count] = 1.0
     return e
