@@ -25,6 +25,7 @@ def open_image_and_table(filename):
 def read_locations(filename):
     """Reads csv file containing locations of infected dots."""
     df = pd.read_csv(filename, sep = "\t")
+    if "X" not in df: df = pd.read_csv(filename, sep = ",")
     
     xs = np.array(df["X"].tolist())
     ys = np.array(df["Y"].tolist())
@@ -41,8 +42,8 @@ def slice_image(img_dict, width=85, height=64):
     img_tif = img_dict["img"]
     img_loc = img_dict["loc"]
     
-    noWidth = int(img_tif.size[0]/width)
-    noHeight = int(img_tif.size[1]/height)
+    noWidth = img_tif.size[0]//width
+    noHeight = img_tif.size[1]//height
     
     subimages_with_count = [ 
                 {"img": img_tif.crop(box), "count": count(img_loc, box)}
