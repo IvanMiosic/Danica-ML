@@ -70,7 +70,7 @@ def count(locations, box = [0, 0, 1360, 1024]):
 
 def convert_image(img):
     """Converts given PIL image object to numpy array of type height x width x rgb"""
-    data = np.asarray(img)
+    data = np.asarray(img)#; print(data.shape)
     data = data/255
     #np.delete(data, 3, axis=1)
     return data

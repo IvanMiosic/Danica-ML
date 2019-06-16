@@ -1,11 +1,14 @@
 import theano
 import numpy as np
-from api_for_data_upload import open_images, convert_image, slice_image
+from api_for_data_upload import open_images, convert_image, slice_image, read_locations
 import sys
 sys.path.append('../DeepLearningPython35')
-from network3 import Network, ConvPoolLayer, FullyConnectedLayer, ReLU, dropout_layer
+from network3 import Network, ConvPoolLayer, FullyConnectedLayer, ReLU, dropout_layer, SoftmaxLayer
 from theano.tensor.nnet import softmax
 import theano.tensor as T
+import glob
+from PIL import Image, ImageFilter
+import os
 
 def fix_axes(img):
     img = np.transpose(img, (2, 0, 1))
@@ -14,8 +17,7 @@ def fix_axes(img):
 def collect_all(folder):
     imgs = open_images(folder)
     regions = []
-    for img in imgs:
-        regions += slice_image(img)
+    for img in imgs: regions += slice_image(img)
     for i in range(len(regions)):
         regions[i]["img"] = fix_axes(convert_image(regions[i]["img"]))
     inputs = [region["img"] for region in regions]
@@ -35,38 +37,45 @@ HHH, WWW = (HH-4)//2, (WW-4)//2
 mini_batch_size = 32
 
 
-class LastLayer(object):
 
-    def __init__(self, n_in, p_dropout=0.0):
-        self.n_in = n_in
-        self.p_dropout = p_dropout
+class FormalityLayer(object):
+
+    def __init__(self):
+        self.n_in = n_in = 1
+        self.n_out = n_out = 1
+        self.activation_fn = ReLU
+        self.p_dropout = 0.0
         # Initialize weights and biases
         self.w = theano.shared(
-            np.zeros((n_in,), dtype=theano.config.floatX),
+            np.asarray(
+                np.random.normal(
+                    loc=0.0, scale=np.sqrt(1.0/n_out), size=(n_in, n_out)),
+                dtype=theano.config.floatX),
             name='w', borrow=True)
         self.b = theano.shared(
-            0.0,
+            np.asarray(np.random.normal(loc=0.0, scale=1.0, size=(n_out,)),
+                       dtype=theano.config.floatX),
             name='b', borrow=True)
         self.params = [self.w, self.b]
 
     def set_inpt(self, inpt, inpt_dropout, mini_batch_size):
         self.inpt = inpt.reshape((mini_batch_size, self.n_in))
-        self.output = (1-self.p_dropout)*T.dot(self.inpt, self.w) + self.b
-        self.y_out = self.output #T.argmax(self.output, axis=1)
+        self.output = self.activation_fn(
+            (1-self.p_dropout)*T.dot(self.inpt, self.w) + self.b).reshape((mini_batch_size,))
+        # self.y_out = T.argmax(self.output, axis=1)
         self.inpt_dropout = dropout_layer(
             inpt_dropout.reshape((mini_batch_size, self.n_in)), self.p_dropout)
-        self.output_dropout = T.dot(self.inpt_dropout, self.w) + self.b
-
-    def cost(self, net):
-        return T.mean((self.y_out - net.y)**2)
-        # "Return the log-likelihood cost."
-        # return -T.mean(T.log(self.output_dropout)[T.arange(net.y.shape[0]), net.y])
+        self.output_dropout = self.activation_fn(
+            T.dot(self.inpt_dropout, self.w) + self.b)
 
     def accuracy(self, y):
-        return T.mean((self.y_out - y)**2)
-        # "Return the accuracy for the mini-batch."
-        # return T.mean(T.eq(y, self.y_out))
+        "Return the accuracy for the mini-batch."
+        return T.mean(abs(y - self.output))
 
+    def cost(self, net):
+        return T.mean((net.y - self.output)**2)
+
+    def otpt(self): return self.output
     
 net = Network([
     ConvPoolLayer(image_shape=(mini_batch_size, 3, H, W),
@@ -77,9 +86,9 @@ net = Network([
                   filter_shape=(10, 10, 5, 5),
                   poolsize=(2, 2),
                   activation_fn=ReLU),
-    FullyConnectedLayer(n_in=10*HHH*WWW, n_out=100, activation_fn=ReLU),
-    #FullyConnectedLayer(n_in=100, n_out=1, activation_fn=ReLU),
-    LastLayer(n_in=100)
-    #SoftmaxLayer(n_in=100, n_out=100)
+    FullyConnectedLayer(n_in=10*HHH*WWW, n_out=1, activation_fn=ReLU),
+    # FullyConnectedLayer(n_in=100, n_out=1, activation_fn=ReLU),
+    FormalityLayer()
+    #SoftmaxLayer(n_in=100, n_out=10)
 ], mini_batch_size)
-net.SGD(training, 5, mini_batch_size, 0.03, testing, testing, lmbda=0.1)
+net.SGD(training, 1, mini_batch_size, 0.03, testing, testing, lmbda=0.1)
