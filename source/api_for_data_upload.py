@@ -15,12 +15,12 @@ def open_image_and_table(filename):
     """Opens file containing image and associated file containing locations of
     infected dots."""
     image = Image.open(filename)
-    image.filter(ImageFilter.SHARPEN)
+    #image.filter(ImageFilter.SHARPEN)
     
     csv_filename = filename.replace(' merge track.tif', '.csv')
     locations = read_locations(csv_filename)
     
-    return {"img": image, "loc": locations}
+    return {"img": image, "loc": locations, "name" : filename}
 
 def read_locations(filename):
     """Reads csv file containing locations of infected dots."""
@@ -41,6 +41,7 @@ def slice_image(img_dict, width=85, height=64):
     infected dots in image"""
     img_tif = img_dict["img"]
     img_loc = img_dict["loc"]
+    name = img_dict["name"]
     
     noWidth = img_tif.size[0]//width
     noHeight = img_tif.size[1]//height
