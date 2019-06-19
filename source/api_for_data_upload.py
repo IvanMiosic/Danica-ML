@@ -63,7 +63,8 @@ def count(locations, box = [0, 0, 1360, 1024]):
     ys = locations["Y"]
     
     count = 0
-    for x, y in zip(xs, ys):
+    for x, y in zip(xs, ys)::q
+        
         if(box[0] <= x < box[2] and box[1] <= y < box[3]):
             count+=1
             
@@ -82,13 +83,6 @@ def vectorized_number(count):
     e = np.zeros((6, 1))
     e[count] = 1.0
     return e
-
-#if __name__ == "__main__":
-    #imgs = open_images("../Danica slike/ED skupina/ED4.14/")
-    #regions = slice_image(imgs[6])
-    
-    #data = convert_image(regions[543]["tif"])
-    #read_locations('../Danica slike/ED skupina/ED4.2/ED4.2 1.1.xls')
     
 
 
