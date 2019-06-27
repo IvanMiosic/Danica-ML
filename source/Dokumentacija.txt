@@ -1,0 +1,11 @@
+File "api_for_data_upload.py" sadrzi sve potrebne funkcije za učitavanje slika u program, manipulaciju slika i pretvorbu u oblik pogodan za cnn.
+
+Konkretnije, sve kreće od funkcije "open_images" koja kao parametar dobiva put do direktorija u kojem su smještene slike. Ona vraća listu slika, koje su pojedinačno otvorene funkcijom "open_image_and_table", koja također otvara i pripadnu tablicu koordinata točaka koje tražimo.
+Dalje, funkcija "slice_image" dijeli sliku na regije odgovarajuće veličine. Pritom pazi da se uz sliku pamti i odgovarajući broj točaka, u čemu joj pomaže funkcija "count".
+Tu se nalaze i dvije pomoćne funkcije za pretvorbu slike u numpy array, te za vektoriziranje predviđane veličine.
+
+--------------------------------
+
+File "neural.py" je srce rješenja. U njemu se definira naša cnn, vrši se treniranje i provodi testiranje.
+
+Sve započine učitavanjem podataka, koristeći funkcije iz "api_for_data_upload". Potom slijedi niz poziva funkcija koje služe definiranju arhitekture mreže. Arhitektura je opisana u završnom izvješću, koristimo funkcije modula keras za implementaciju. Mjerimo vrijeme treniranja mreže. Na kraju ispisujemo rezultate koje naša mreža ostvaruje na testnom skupu, usporedn s očekivanim rezultatima.
